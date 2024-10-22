@@ -10,13 +10,64 @@
 
     <div class="container">
         <h1>Generate Kode Download</h1>
-        <form action="assets/php/generate_code.php" method="POST" class="form-container">
+        <form id="generateForm" class="form-container">
             <label for="file_name">Nama File</label>
             <input type="text" id="file_name" name="file_name" placeholder="Masukkan nama file" required>
 
             <button type="submit">Generate Kode</button>
         </form>
+
+        <div id="kodeResult"></div>
     </div>
+
+    <script>
+        // Fungsi untuk generate kode acak
+        function generateCode() {
+            return Math.random().toString(36).substr(2, 8).toUpperCase(); // Kode acak 8 karakter
+        }
+
+        // Fungsi untuk menyimpan kode ke GitHub
+        async function saveToGitHub(fileName, code) {
+            const token = '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OKEN'; // Ganti dengan GitHub Personal Access Token
+            const repo = 'danyoktavianwardana/Server-Dany-SecureCode'; // Ganti dengan nama repo GitHub Anda
+            const path = `data/${Generate}.json`; // Nama file di repo
+
+            const content = JSON.stringify({ fileName: fileName, code: code });
+            const base64Content = btoa(content); // Encode to base64
+
+            const response = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Menambahkan kode untuk ${fileName}`,
+                    content: base64Content
+                })
+            });
+
+            if (response.ok) {
+                return 'Kode berhasil disimpan ke GitHub';
+            } else {
+                return 'Gagal menyimpan kode ke GitHub';
+            }
+        }
+
+        // Event listener untuk form submit
+        document.getElementById('generateForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const fileName = document.getElementById('file_name').value;
+            const code = generateCode();
+
+            document.getElementById('kodeResult').textContent = `Kode: ${code}`;
+
+            // Simpan ke GitHub
+            const result = await saveToGitHub(fileName, code);
+            alert(result);
+        });
+    </script>
 
 </body>
 </html>
